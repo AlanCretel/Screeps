@@ -1,0 +1,58 @@
+var roleMiner = require('role.miner');
+var roleTransporter = require('role.transporter');
+var roleUpgrader = require('role.upgrader');
+
+module.exports.loop = function () {
+    
+    var miners = _.filter(Game.creeps, (creep) => creep.memory.role == 'miner');
+    console.log('Miners: ' + miners.length);
+
+    if(miners.length < 3) {
+        var newName = 'Miner' + Game.time;
+        console.log('Spawning new miner: ' + newName);
+        Game.spawns['Spawn1'].spawnCreep([WORK,WORK,MOVE], newName,
+            {memory: {role: 'miner'}});
+    }
+    
+    var transporters = _.filter(Game.creeps, (creep) => creep.memory.role == 'transporter');
+    console.log('Transporters: ' + transporters.length);
+
+    if(transporters.length < 2) {
+        var newName = 'Transporter' + Game.time;
+        console.log('Spawning new transporter: ' + newName);
+        Game.spawns['Spawn1'].spawnCreep([CARRY,CARRY,MOVE], newName,
+            {memory: {role: 'transporter'}});
+    }
+    
+    var upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
+    console.log('Upgraders: ' + upgraders.length);
+
+    if(upgraders.length < 2) {
+        var newName = 'Upgrader' + Game.time;
+        console.log('Spawning new upgrader: ' + newName);
+        Game.spawns['Spawn1'].spawnCreep([WORK,CARRY,MOVE], newName,
+            {memory: {role: 'upgrader'}});
+    }
+
+    if(Game.spawns['Spawn1'].spawning) {
+        var spawningCreep = Game.creeps[Game.spawns['Spawn1'].spawning.name];
+        Game.spawns['Spawn1'].room.visual.text(
+            '🛠️' + spawningCreep.memory.role,
+            Game.spawns['Spawn1'].pos.x + 1,
+            Game.spawns['Spawn1'].pos.y,
+            {align: 'left', opacity: 0.8});
+    }
+
+    for(var name in Game.creeps) {
+        var creep = Game.creeps[name];
+        if(creep.memory.role == 'miner') {
+            roleMiner.run(creep);
+        }
+        if(creep.memory.role == 'transporter') {
+            roleTransporter.run(creep);
+        }
+        if(creep.memory.role == 'upgrader') {
+            roleUpgrader.run(creep);
+        }
+    }
+}
